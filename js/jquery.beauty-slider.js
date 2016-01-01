@@ -17,14 +17,15 @@
 
     // Default options
     self.defaults = {
-        debug: true,
-        speed: 500,
-        delay: 2000,
-        pager: true,
-        controls: true,
-        auto: true,
-        captions: true,
-        pause: 4000
+      effect: 'fade',
+      debug: true,
+      speed: 500,
+      delay: 2000,
+      pager: true,
+      controls: true,
+      auto: true,
+      captions: true,
+      pause: 4000
     };
 
     // Declare variables
@@ -75,19 +76,25 @@
       var height = '600'; //self.slides.eq(0).height();
       self.context.css({height: height + 'px'});
 
-      // Add button direction and pager
-      wrapper.append('<div class="bt-direction">' + 
-        '<a class="bt-prev">Prev</a>' + 
-        '<a class="bt-next">Next</a>' +
+      self.controls = $('<div class="bt-direction">' + 
+        '<a class="bt-prev"></a>' + 
+        '<a class="bt-next"></a>' +
       '</div>');
 
+      // Add button direction and pager
+      wrapper.append(self.controls);
+
+      var paging = '<div class="bt-pager">';
+
+      for (var i = 0;i < self.total;i++) {
+        paging += '<a class="bt-control active">' + (i + 1) + '</a>';
+      }
+      paging += '</div>';
+
+      self.pager = $(paging);
+
       // Add pager
-      wrapper.append('<div class="bt-pager">' +
-        '<a class="bt-control active" rel="0">1</a>' +
-        '<a class="bt-control" rel="1">2</a>' +
-        '<a class="bt-control" rel="2">3</a>' +
-        '<a class="bt-control" rel="3">4</a>' +
-      '</div>');
+      wrapper.append(paging);
 
       // Animate first slide
       self._animate(0, 'next');
@@ -121,14 +128,18 @@
     }
 
     self._animate = function(pos, direction) {
-      console.log('Current position ' + pos);
-
       // Hide current slide
-      self.slides.eq(self.current).animate({ opacity: 0.0 }, self.settings.speed, 'linear');
+      self.slides.eq(self.current).animate({ opacity: 0.0 }, self.settings.speed, 'swing');
 
       self._setPosition(pos);
 
-      self.slides.eq(self.current).animate({ opacity: 1.0 }, self.settings.speed, 'linear');
+      self.slides.eq(self.current).animate({ opacity: 1.0 }, self.settings.speed, 'swing');
+    };
+
+    self._active = function() {
+      $('a:eq('+ self.current +')', self.pager).removeClass('active');
+
+      console.log(self.pager.find('a').eq(self.current).attr('class'));
     }
 
     self._setPosition = function(pos) {
@@ -140,6 +151,9 @@
       }
 
       self.current = pos;
+      self._active();
+
+      console.log('Current position ' + self.current);
 
       return self;
     };
