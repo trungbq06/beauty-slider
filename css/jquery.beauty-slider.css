@@ -1,3 +1,53 @@
+/*
+ * jQuery Nivo Slider v3.2
+ * TODO add url here
+ *
+ * Copyright 2016, Trung Bui
+ * Free to use and abuse under the MIT license.
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+
 ol, ul {
     list-style: none;
+}
+
+/*
+* =======================
+* 	   Btslider css
+* =======================
+*/
+.bt-wrapper {
+	width: 100%;
+}
+.btslider {
+	position: relative;
+	width: 100%;
+	height: auto;
+	overflow: hidden;
+}
+.btslider img {
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	max-width: none;
+}
+.bt-direction a {
+	position: absolute;
+	top: 50%;
+	z-index: 100;
+	cursor: pointer;
+}
+.bt-direction .bt-prev {
+	left: 0px;
+}
+.bt-direction .bt-next {
+	right: 0px;
+}
+.bt-pager {
+	text-align: center;
+	padding: 20px 0;
+}
+.bt-pager a {
+	cursor: pointer;
 }
