@@ -20,9 +20,10 @@
       effect: 'fade',
       debug: true,
       speed: 500,
-      delay: 2000,
+      delay: 4000,
       pager: true,
       controls: true,
+      toggleControls: false,
       auto: true,
       captions: true,
       pause: 4000
@@ -50,15 +51,15 @@
 
     self.init = function (options) {
       // Init the container
-      self._setup();
+      self.setup();
 
-      self.settings.auto && self._start();
+      self.settings.auto && self.start();
 
 
     };
 
     // Setup everything need
-    self._setup = function() {
+    self.setup = function() {
       // Get all children elements
       self.slides = self.context.children();
 
@@ -66,83 +67,131 @@
 
       self.total = self.slides.length;
 
-      console.log('Total ' + self.total + ' slides');
+      if (self.settings.toggleControls) {
+        self.context.on('mouseover', self.mouseover);
+        self.context.on('mouseout', self.mouseout);
+      }
 
       // Add wrapper
       self.context.wrap('<div class="bt-wrapper"></div>');
 
-      var wrapper = self.context.parent();
-
       var height = '600'; //self.slides.eq(0).height();
       self.context.css({height: height + 'px'});
 
+      self.createControls();
+
+      self.createPager();
+
+      // Animate first slide
+      self.animate(0, 'next');
+    };
+
+    self.createControls = function () {
+      var wrapper = self.context.parent();
+
       self.controls = $('<div class="bt-direction">' + 
-        '<a class="bt-prev"></a>' + 
-        '<a class="bt-next"></a>' +
+        '<a class="prev"></a>' + 
+        '<a class="next"></a>' +
       '</div>');
 
       // Add button direction and pager
       wrapper.append(self.controls);
 
+      if (self.settings.toggleControls) {
+        self.controls.fadeOut(2000);
+      }
+
+      // Attach event click to our controls
+      self.controls.children().each(function () {
+        $(this).on('click', function() {
+          self.stop();
+          self[$(this).attr('class')]();
+        });
+      });
+    }
+
+    self.createPager = function() {
+      var wrapper = self.context.parent();
+
       var paging = '<div class="bt-pager">';
 
       for (var i = 0;i < self.total;i++) {
-        paging += '<a class="bt-control active">' + (i + 1) + '</a>';
+        paging += '<a class="bt-control">' + (i + 1) + '</a>';
       }
       paging += '</div>';
-
-      self.pager = $(paging);
 
       // Add pager
       wrapper.append(paging);
 
-      // Animate first slide
-      self._animate(0, 'next');
-    };
+      self.pager = wrapper.find('.bt-pager').first();
+
+      self.pager.children().each(function() {
+        $(this).on('click', function() {
+          var newPage = $(this).text() - 1;
+
+          self.stop().animate(newPage, 'next');
+        });
+      });
+    }
+
+    self.mouseover = function(event) {
+      var currentTarget = document.elementFromPoint(event.pageX, event.pageY);
+      if ($(currentTarget).parent().hasClass('btslider')) {
+        self.controls.fadeIn('slow');
+      }
+    }
+
+    self.mouseout = function(event) {
+      var currentTarget = document.elementFromPoint(event.pageX, event.pageY);
+      if (!$(currentTarget).parent().hasClass('btslider') && !$(currentTarget).parent().hasClass('bt-direction')) {
+        self.controls.fadeOut('slow');
+      }
+    }
 
     // Auto start the animation
-    self._start = function() {
+    self.start = function() {
       if (self.interval) { return; }
 
       // Create interval to animate slide
       self.interval = setInterval(function() {
-        self._next();
+        self.next();
       }, self.settings.delay);
 
       return self;
     };
 
     // Stop the animation
-    self._stop = function() {
+    self.stop = function() {
       clearTimeout(self.interval);
+
+      self.interval = null;
 
       return self;
     }
 
-    self._next = function() {
-      return self._animate(self.current + 1, 'next');
+    self.next = function() {
+      return self.animate(self.current + 1, 'next');
     }
 
-    self._prev = function() {
-      return self._animate(self.current - 1, 'prev');
+    self.prev = function() {
+      return self.animate(self.current - 1, 'prev');
     }
 
-    self._animate = function(pos, direction) {
+    self.animate = function(pos, direction) {
       // Hide current slide
-      self.slides.eq(self.current).animate({ opacity: 0.0 }, self.settings.speed, 'swing');
+      self.slides.eq(self.current).animate({ opacity: 0.0 }, self.settings.speed);
 
-      self._setPosition(pos);
+      self.setPosition(pos);
 
-      self.slides.eq(self.current).animate({ opacity: 1.0 }, self.settings.speed, 'swing');
+      self.slides.eq(self.current).animate({ opacity: 1.0 }, self.settings.speed, self.start);
     };
 
-    self._active = function() {
-      $('a:eq('+ self.current +')', self.pager).removeClass('active');
-
-      console.log(self.pager.find('a').eq(self.current).attr('class'));
+    self.active = function() {
+      self.pager.children().removeClass('active');
+      $('a:eq('+ self.current +')', self.pager).addClass('active');
     }
 
-    self._setPosition = function(pos) {
+    self.setPosition = function(pos) {
       if (pos >= self.total) {
         pos = 0;
       }
@@ -151,11 +200,20 @@
       }
 
       self.current = pos;
-      self._active();
-
-      console.log('Current position ' + self.current);
+      self.active();
 
       return self;
+    };
+
+    /**
+    * Use to debug the log
+    */
+    self.debug = function(log) {
+      if (self.settings.debug) {
+        if (window.console && window.console.log) {
+          window.console.log(log);
+        }
+      }
     };
 
     return self.init(options);
@@ -168,16 +226,5 @@
       return $this.data('btSlider', new $.BtSlider($this, options));
     });
   };
-
-  /**
-  * Use to debug the log
-  */
-  function debug(object, log) {
-    if (object.settings.debug) {
-      if (window.console && window.console.log) {
-        window.console.log(log);
-      }
-    }
-  }
  
 }( jQuery ));
