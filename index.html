@@ -6,19 +6,26 @@
 <script type="text/javascript" src="js/jquery.1.7.2.min.js"></script>
 <script type="text/javascript" src="js/jquery.beauty-slider.js"></script>
 <script type="text/javascript">
-$(function() {
+jQuery(document).ready(function($) {
 	$('.btslider').btSlider();
 });
 </script>
+<style>
+#content {
+	width: 800px;
+	margin: 0 auto;
+}
+</style>
 </head>
 <body>
 
-<div class="btslider">
-	<img src="images/image_1.jpg" alt="Sample title 1" class="first" />
-	<img src="images/image_2.jpg" alt="Sample title 2" />
-	<img src="images/image_3.jpg" alt="Sample title 3" />
-	<img src="images/image_4.jpg" alt="Sample title 4" />
-	<img src="images/image_5.jpg" alt="Sample title 5" />
+<div id="content">
+	<ul class="btslider">
+	  <li><img src="http://bxslider.com/images/home_slides/hillside.jpg" /></li>
+	  <li><img src="http://bxslider.com/images/home_slides/houses.jpg" /></li>
+	  <li><img src="http://bxslider.com/images/home_slides/hillside.jpg" /></li>
+	  <li><img src="http://bxslider.com/images/home_slides/houses.jpg" /></li>
+	</ul>
 </div>
 
 </body>

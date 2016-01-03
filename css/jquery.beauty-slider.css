@@ -17,41 +17,47 @@ ol, ul {
 * =======================
 */
 .bt-wrapper {
-	width: 50%;
+	width: 100%;
 	position: relative;
 }
 .btslider {
 	position: relative;
+	list-style: none;
 	width: 100%;
 	height: auto;
 	overflow: hidden;
+	padding: 0;
+	margin: 0;
+}
+.btslider li {
+	display: none;
+	float: none;
+	position: absolute;
+	z-index: 0;
 }
 .btslider img {
-	display: none;
-	position: absolute;
-	top: 0;
-	left: 0;
 	max-width: none;
+	display: block;
 }
 .bt-direction a {
 	position: absolute;
-	top: 40%;
+	top: 45%;
 	z-index: 100;
 	cursor: pointer;
 }
 .bt-direction .prev {
-	left: 20px;
+	left: 10px;
 	background: url(../images/prev.png) no-repeat;
-    background-size: 60px;
-    width: 60px;
-    height: 60px;
+    background-size: 40px;
+    width: 40px;
+    height: 40px;
 }
 .bt-direction .next {
-	right: 20px;
+	right: 10px;
 	background: url(../images/next.png) no-repeat;
-    background-size: 60px;
-    width: 60px;
-    height: 60px;
+    background-size: 40px;
+    width: 40px;
+    height: 40px;
 }
 .bt-pager {
 	text-align: center;

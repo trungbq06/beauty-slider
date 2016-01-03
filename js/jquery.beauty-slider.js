@@ -20,20 +20,23 @@
       effect: 'fade',
       debug: true,
       speed: 500,
-      delay: 4000,
+      delay: 3000,
       pager: true,
       controls: true,
       toggleControls: false,
       auto: true,
       captions: true,
+      infinite: true,
       pause: 4000
     };
 
-    // Declare variables
+    // Interval to animate between images
     self.interval = null;
 
+    // Settings of this class
     self.settings = $.extend({}, self.defaults, options);
 
+    // DOM element
     self.context = context;
 
     // Total of slides
@@ -49,16 +52,48 @@
     self.windowWidth = $(window).width();
     self.windowHeight = $(window).height();
 
+    /**
+    * We need to preload all images in order to setup the right things
+    */
+    function loadImages(elements, callback) {
+      var count = elements.find('img').length;
+      if (count == 0) {
+        return;
+      }
+
+      var total = 0;
+      elements.find('img').each(function () {
+        $(this).on('load', function() {
+          total++;
+          if (total == count) callback();
+        }).each(function() {
+          if (this.complete) $(this).load();
+        });
+      });
+    }
+
+    /**
+    * Initialize function
+    */
     self.init = function (options) {
-      // Init the container
-      self.setup();
+      // preload images here
+      loadImages(self.context.children(), function() {
+        // Set the height for parent
+        var height = self.context.children().eq(self.current).height();
 
-      self.settings.auto && self.start();
+        self.context.css({height: height + 'px'});
 
+        // Setup dozen things
+        self.setup();
 
-    };
+        // Animate the first image
+        self.animate(0, 'next');
+      });
+    }
 
-    // Setup everything need
+    /**
+    * Setup everything need
+    */
     self.setup = function() {
       // Get all children elements
       self.slides = self.context.children();
@@ -67,6 +102,7 @@
 
       self.total = self.slides.length;
 
+      // Allow to hide controls
       if (self.settings.toggleControls) {
         self.context.on('mouseover', self.mouseover);
         self.context.on('mouseout', self.mouseout);
@@ -75,17 +111,19 @@
       // Add wrapper
       self.context.wrap('<div class="bt-wrapper"></div>');
 
-      var height = '600'; //self.slides.eq(0).height();
-      self.context.css({height: height + 'px'});
-
+      // Create next and previous button
       self.createControls();
 
+      // Create paging dots
       self.createPager();
 
-      // Animate first slide
-      self.animate(0, 'next');
-    };
+      // Auto start animation if auto settings is true
+      self.settings.auto && self.start();
+    }
 
+    /**
+    * Create next and previous buttons
+    */
     self.createControls = function () {
       var wrapper = self.context.parent();
 
@@ -110,6 +148,9 @@
       });
     }
 
+    /**
+    * Create paging dots
+    */
     self.createPager = function() {
       var wrapper = self.context.parent();
 
@@ -129,11 +170,16 @@
         $(this).on('click', function() {
           var newPage = $(this).text() - 1;
 
-          self.stop().animate(newPage, 'next');
+          if (newPage != self.current) {
+            self.stop().animate(newPage, 'next');
+          }
         });
       });
     }
 
+    /**
+    * Handle mouse over event
+    */
     self.mouseover = function(event) {
       var currentTarget = document.elementFromPoint(event.pageX, event.pageY);
       if ($(currentTarget).parent().hasClass('btslider')) {
@@ -141,6 +187,9 @@
       }
     }
 
+    /**
+    * Handle mouse out event
+    */
     self.mouseout = function(event) {
       var currentTarget = document.elementFromPoint(event.pageX, event.pageY);
       if (!$(currentTarget).parent().hasClass('btslider') && !$(currentTarget).parent().hasClass('bt-direction')) {
@@ -148,7 +197,9 @@
       }
     }
 
-    // Auto start the animation
+    /**
+    * Auto start the animation
+    */
     self.start = function() {
       if (self.interval) { return; }
 
@@ -158,9 +209,11 @@
       }, self.settings.delay);
 
       return self;
-    };
+    }
 
-    // Stop the animation
+    /**
+    * Stop the animation
+    */
     self.stop = function() {
       clearTimeout(self.interval);
 
@@ -169,28 +222,50 @@
       return self;
     }
 
+    /**
+    * Next slide
+    */
     self.next = function() {
       return self.animate(self.current + 1, 'next');
     }
 
+    /**
+    * Previous slide
+    */
     self.prev = function() {
       return self.animate(self.current - 1, 'prev');
     }
 
+    /**
+    * Animation between slide. Add new animation here
+    */
     self.animate = function(pos, direction) {
-      // Hide current slide
-      self.slides.eq(self.current).animate({ opacity: 0.0 }, self.settings.speed);
+      // In case position is valid
+      if ((!self.settings.infinite && pos >= 0 && pos < self.total) || self.settings.infinite) {
+        // Hide current slide
+        self.slides.eq(self.current).animate({ opacity: 0.0 }, self.settings.speed);
 
-      self.setPosition(pos);
+        self.setPosition(pos);
 
-      self.slides.eq(self.current).animate({ opacity: 1.0 }, self.settings.speed, self.start);
+        // Show new image with animation fade
+        self.slides.eq(self.current).animate({ opacity: 1.0 }, self.settings.speed, self.start);
+      } else {
+        //　Start interval again
+        self.start();
+      }
     };
 
+    /**
+    * Active current page
+    */
     self.active = function() {
       self.pager.children().removeClass('active');
       $('a:eq('+ self.current +')', self.pager).addClass('active');
     }
 
+    /**
+    * Set position for current page
+    */
     self.setPosition = function(pos) {
       if (pos >= self.total) {
         pos = 0;
@@ -219,6 +294,9 @@
     return self.init(options);
   };
 
+  /**
+  * Attach our class to jQuery
+  */
   $.fn.btSlider = function(options) {
     return this.each(function() {
       var $this = $(this);
